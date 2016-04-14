@@ -294,8 +294,8 @@ namespace NHibernate.Loader
 		}
 
 		private void WalkEntityAssociationTree(IAssociationType associationType, IOuterJoinLoadable persister,
-											   int propertyNumber, string alias, string path, bool nullable, int currentDepth,
-											   ILhsAssociationTypeSqlInfo associationTypeSQLInfo)
+		                                       int propertyNumber, string alias, string path, bool nullable, int currentDepth,
+		                                       ILhsAssociationTypeSqlInfo associationTypeSQLInfo)
 		{
 			string[] aliasedLhsColumns = associationTypeSQLInfo.GetAliasedColumnNames(associationType, 0);
 			string[] lhsColumns = associationTypeSQLInfo.GetColumnNames(associationType, 0);
@@ -304,7 +304,7 @@ namespace NHibernate.Loader
 			string subpath = SubPath(path, persister.GetSubclassPropertyName(propertyNumber));
 
 			JoinType joinType = GetJoinType(associationType, persister.GetFetchMode(propertyNumber), subpath, lhsTable,
-											lhsColumns, nullable, currentDepth, persister.GetCascadeStyle(propertyNumber));
+			                                lhsColumns, nullable, currentDepth, persister.GetCascadeStyle(propertyNumber));
 
 			AddAssociationToJoinTreeIfNecessary(associationType, aliasedLhsColumns, alias, subpath, currentDepth, joinType);
 		}
@@ -323,12 +323,12 @@ namespace NHibernate.Loader
 				if (type.IsAssociationType)
 				{
 					WalkEntityAssociationTree((IAssociationType) type, persister, i, alias, path,
-											  persister.IsSubclassPropertyNullable(i), currentDepth, associationTypeSQLInfo);
+					                          persister.IsSubclassPropertyNullable(i), currentDepth, associationTypeSQLInfo);
 				}
 				else if (type.IsComponentType)
 				{
 					WalkComponentTree((IAbstractComponentType) type, 0, alias, SubPath(path, persister.GetSubclassPropertyName(i)),
-									  currentDepth, associationTypeSQLInfo);
+					                  currentDepth, associationTypeSQLInfo);
 				}
 			}
 		}
@@ -337,7 +337,7 @@ namespace NHibernate.Loader
 		/// For a component, add to a list of associations to be fetched by outerjoin
 		/// </summary>
 		protected void WalkComponentTree(IAbstractComponentType componentType, int begin, string alias, string path,
-										 int currentDepth, ILhsAssociationTypeSqlInfo associationTypeSQLInfo)
+		                                 int currentDepth, ILhsAssociationTypeSqlInfo associationTypeSQLInfo)
 		{
 			IType[] types = componentType.Subtypes;
 			string[] propertyNames = componentType.PropertyNames;
@@ -355,8 +355,8 @@ namespace NHibernate.Loader
 					bool[] propertyNullability = componentType.PropertyNullability;
 
 					JoinType joinType = GetJoinType(associationType, componentType.GetFetchMode(i), subpath, lhsTable, lhsColumns,
-													propertyNullability == null || propertyNullability[i], currentDepth,
-													componentType.GetCascadeStyle(i));
+					                                propertyNullability == null || propertyNullability[i], currentDepth,
+					                                componentType.GetCascadeStyle(i));
 
 					AddAssociationToJoinTreeIfNecessary(associationType, aliasedLhsColumns, alias, subpath, currentDepth, joinType);
 				}
@@ -659,8 +659,10 @@ namespace NHibernate.Loader
 							outerjoin.ToFromFragmentString.IndexOfCaseInsensitive(manyToOneFilterFragment) == -1;
 						if (joinClauseDoesNotContainsFilterAlready)
 						{
-							outerjoin.AddCondition(manyToOneFilterFragment);
-						}
+                            // Ensure that the join condition is added to the join, not the where clause.
+                            // Adding the condition to the where clause causes left joins to become inner joins.
+                            outerjoin.AddFromFragmentString(new SqlString(manyToOneFilterFragment));
+                        }
 					}
 				}
 				last = oj;
