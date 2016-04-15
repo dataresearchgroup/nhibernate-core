@@ -1317,14 +1317,14 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
-											Message =
-												"could not initialize lazy properties: " + MessageHelper.InfoString(this, id, Factory),
-											Sql = SQLLazySelectString.ToString(),
-											EntityName = EntityName,
-											EntityId = id
-										};
+				                       	{
+				                       		SqlException = sqle,
+				                       		Message =
+				                       			"could not initialize lazy properties: " + MessageHelper.InfoString(this, id, Factory),
+				                       		Sql = SQLLazySelectString.ToString(),
+				                       		EntityName = EntityName,
+				                       		EntityId = id
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}
@@ -1490,13 +1490,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
-											Message = "could not retrieve snapshot: " + MessageHelper.InfoString(this, id, Factory),
-											Sql = SQLSnapshotSelectString.ToString(),
-											EntityName = EntityName,
-											EntityId = id
-										};
+				                       	{
+				                       		SqlException = sqle,
+				                       		Message = "could not retrieve snapshot: " + MessageHelper.InfoString(this, id, Factory),
+				                       		Sql = SQLSnapshotSelectString.ToString(),
+				                       		EntityName = EntityName,
+				                       		EntityId = id
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}
@@ -1673,13 +1673,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
-											Message = "could not retrieve version: " + MessageHelper.InfoString(this, id, Factory),
-											Sql = VersionSelectString.ToString(),
-											EntityName = EntityName,
-											EntityId = id
-										};
+				                       	{
+				                       		SqlException = sqle,
+				                       		Message = "could not retrieve version: " + MessageHelper.InfoString(this, id, Factory),
+				                       		Sql = VersionSelectString.ToString(),
+				                       		EntityName = EntityName,
+				                       		EntityId = id
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 			return nextVersion;
@@ -1735,13 +1735,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
-											Message = "could not retrieve version: " + MessageHelper.InfoString(this, id, Factory),
-											Sql = VersionSelectString.ToString(),
-											EntityName = EntityName,
-											EntityId = id
-										};
+				                       	{
+				                       		SqlException = sqle,
+				                       		Message = "could not retrieve version: " + MessageHelper.InfoString(this, id, Factory),
+				                       		Sql = VersionSelectString.ToString(),
+				                       		EntityName = EntityName,
+				                       		EntityId = id
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}
@@ -2183,7 +2183,7 @@ namespace NHibernate.Persister.Entity
 		private void InitDiscriminatorPropertyPath()
 		{
 			propertyMapping.InitPropertyPaths(EntityClass, DiscriminatorType, new string[] {DiscriminatorColumnName},
-											  new string[] {DiscriminatorFormulaTemplate}, Factory);
+			                                  new string[] {DiscriminatorFormulaTemplate}, Factory);
 		}
 
 		private void InitPropertyPaths(IMapping mapping)
@@ -2714,13 +2714,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
+				                       	{
+				                       		SqlException = sqle,
 											Message = "could not insert: " + MessageHelper.InfoString(this, tableId),
-											Sql = sql.ToString(),
-											EntityName = EntityName,
+				                       		Sql = sql.ToString(),
+				                       		EntityName = EntityName,
 											EntityId = tableId
-										};
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}
@@ -2860,13 +2860,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
-											Message = "could not update: " + MessageHelper.InfoString(this, id, Factory),
-											Sql = sql.Text.ToString(),
+				                       	{
+				                       		SqlException = sqle,
+				                       		Message = "could not update: " + MessageHelper.InfoString(this, id, Factory),
+				                       		Sql = sql.Text.ToString(),
 																	EntityName = EntityName,
 																	EntityId = id
-										};
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}
@@ -2984,13 +2984,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
+				                       	{
+				                       		SqlException = sqle,
 											Message = "could not delete: " + MessageHelper.InfoString(this, tableId, Factory),
-											Sql = sql.Text.ToString(),
-											EntityName = EntityName,
+				                       		Sql = sql.Text.ToString(),
+				                       		EntityName = EntityName,
 											EntityId = tableId
-										};
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}
@@ -3253,13 +3253,14 @@ namespace NHibernate.Persister.Entity
 			}
 		}
 
-		public virtual string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters)
+		public virtual string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters, bool outerJoin)
 		{
 			StringBuilder sessionFilterFragment = new StringBuilder();
 
-			filterHelper.Render(sessionFilterFragment, GenerateFilterConditionAlias(alias), GetColumnsToTableAliasMap(alias), enabledFilters);
-
-			return sessionFilterFragment.Append(FilterFragment(alias)).ToString();
+            if (outerJoin)
+                return sessionFilterFragment.ToString();
+            else
+                return sessionFilterFragment.Append(FilterFragment(alias)).ToString();
 		}
 
 		private IDictionary<string, string> GetColumnsToTableAliasMap(string rootAlias)
@@ -4115,7 +4116,7 @@ namespace NHibernate.Persister.Entity
 			if (loaderName == null)
 			{
 				ProcessGeneratedPropertiesWithGeneratedSql(id, entity, state, session, sqlUpdateGeneratedValuesSelectString, PropertyUpdateGenerationInclusions);
-			}
+		}
 			else
 			{
 				// Remove entity from first-level cache to ensure that loader fetches fresh data from database.
@@ -4161,13 +4162,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
-											Message = "unable to select generated column values",
-											Sql = selectionSQL.ToString(),
-											EntityName = EntityName,
-											EntityId = id
-										};
+				                       	{
+				                       		SqlException = sqle,
+				                       		Message = "unable to select generated column values",
+				                       		Sql = selectionSQL.ToString(),
+				                       		EntityName = EntityName,
+				                       		EntityId = id
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}
@@ -4270,13 +4271,13 @@ namespace NHibernate.Persister.Entity
 			catch (DbException sqle)
 			{
 				var exceptionContext = new AdoExceptionContextInfo
-										{
-											SqlException = sqle,
-											Message = "could not retrieve snapshot: " + MessageHelper.InfoString(this, id, Factory),
-											Sql = sql.ToString(),
-											EntityName = EntityName,
-											EntityId = id
-										};
+				                       	{
+				                       		SqlException = sqle,
+				                       		Message = "could not retrieve snapshot: " + MessageHelper.InfoString(this, id, Factory),
+				                       		Sql = sql.ToString(),
+				                       		EntityName = EntityName,
+				                       		EntityId = id
+				                       	};
 				throw ADOExceptionHelper.Convert(Factory.SQLExceptionConverter, exceptionContext);
 			}
 		}

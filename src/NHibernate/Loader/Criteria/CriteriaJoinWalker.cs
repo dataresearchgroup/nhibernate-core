@@ -66,13 +66,13 @@ namespace NHibernate.Loader.Criteria
 				resultTypes = new IType[] { TypeFactory.ManyToOne(persister.EntityName) };
 
 				// root entity comes last
-				userAliasList.Add(criteria.Alias); //root entity comes *last*
+			userAliasList.Add(criteria.Alias); //root entity comes *last*
 				resultTypeList.Add(translator.ResultType(criteria));
 				includeInResultRowList.Add(true);
 				userAliases = userAliasList.ToArray();
 				resultTypes = resultTypeList.ToArray();
 				includeInResultRow = includeInResultRowList.ToArray();
-			}
+		}
 		}
 
 		protected override void WalkEntityTree(IOuterJoinLoadable persister, string alias, string path, int currentDepth)
@@ -114,7 +114,7 @@ namespace NHibernate.Loader.Criteria
 		/// </summary>
 		protected override SqlString WhereFragment
 		{
-			get { return base.WhereFragment.Append(((IQueryable) Persister).FilterFragment(Alias, EnabledFilters)); }
+			get { return base.WhereFragment.Append(((IQueryable) Persister).FilterFragment(Alias, EnabledFilters, false)); }
 		}
 
 		public ISet<string> QuerySpaces
@@ -202,15 +202,15 @@ namespace NHibernate.Loader.Criteria
 				{
 					includeInResultRowList.Add(subcriteria != null && subcriteria.Alias != null);
 
-					if (sqlAlias != null)
-					{
+				if (sqlAlias != null)
+				{
 						if (subcriteria.Alias != null)
 						{
-							userAliasList.Add(subcriteria.Alias); //alias may be null
+					userAliasList.Add(subcriteria.Alias); //alias may be null
 							resultTypeList.Add(translator.ResultType(subcriteria));
-						}
-					}
 				}
+			}
+		}
 			}
 
 			if (sqlAlias == null)
