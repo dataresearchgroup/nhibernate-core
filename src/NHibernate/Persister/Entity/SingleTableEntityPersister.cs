@@ -73,12 +73,6 @@ namespace NHibernate.Persister.Entity
 		private static readonly object NullDiscriminator = new object();
 		private static readonly object NotNullDiscriminator = new object();
 
-        #region Dynamic filters attached to the class-level
-
-        private readonly FilterHelper filterHelper;
-
-        #endregion
-
 		//provided so we can join to keys other than the primary key
 		private readonly Dictionary<int, string[]> joinToKeyColumns;
 
@@ -598,12 +592,7 @@ namespace NHibernate.Persister.Entity
 		{
 			return subclassTableSequentialSelect[table] && !isClassOrSuperclassTable[table];
 		}
-
-        public override SqlString FromJoinFragment(string alias, bool innerJoin, bool includeSubclasses)
-        {
-            return base.FromJoinFragment(alias, innerJoin, includeSubclasses);
-        }
-
+        
         public override string FromTableFragment(string name)
 		{
 			return TableName + " " + name;

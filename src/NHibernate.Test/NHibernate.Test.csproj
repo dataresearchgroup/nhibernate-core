@@ -724,7 +724,7 @@
     <Compile Include="Linq\ByMethod\DistinctTests.cs" />
     <Compile Include="Component\Basic\ComponentWithUniqueConstraintTests.cs" />
     <Compile Include="NHSpecificTest\NH3506\Entity.cs" />
-    <Compile Include="NHSpecificTest\NH3506\DescriminatorFixture.cs" />
+    <Compile Include="NHSpecificTest\NH3506\DiscriminatorFixture.cs" />
     <Compile Include="NHSpecificTest\NH2218\Fixture.cs" />
     <Compile Include="NHSpecificTest\NH2931\Fixture.cs" />
     <Compile Include="NHSpecificTest\NH2931\Mappings.cs" />
