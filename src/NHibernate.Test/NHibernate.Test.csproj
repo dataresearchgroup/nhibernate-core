@@ -695,6 +695,8 @@
     <Compile Include="NHSpecificTest\BagWithLazyExtraAndFilter\Fixture.cs" />
     <Compile Include="Linq\ByMethod\DistinctTests.cs" />
     <Compile Include="Component\Basic\ComponentWithUniqueConstraintTests.cs" />
+    <Compile Include="NHSpecificTest\NH3506\Entity.cs" />
+    <Compile Include="NHSpecificTest\NH3506\DiscriminatorFixture.cs" />
     <Compile Include="NHSpecificTest\NH3570\BiFixture.cs" />
     <Compile Include="NHSpecificTest\NH3570\Model.cs" />
     <Compile Include="NHSpecificTest\NH3570\UniFixture.cs" />

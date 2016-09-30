@@ -843,11 +843,11 @@ namespace NHibernate.Persister.Collection
 			string selectValue = GetCountSqlSelectClause();
 
 			return new SqlSimpleSelectBuilder(dialect, factory)
-				.SetTableName(TableName)
-				.AddWhereFragment(KeyColumnNames, KeyType, "=")
-				.AddColumn(selectValue)
-				.ToSqlString()
-				.Append(FilterFragment(TableName, sessionImplementor.EnabledFilters));
+		        .SetTableName(TableName)
+		        .AddWhereFragment(KeyColumnNames, KeyType, "=")
+		        .AddColumn(selectValue)
+		        .ToSqlString()
+		        .Append(FilterFragment(TableName, sessionImplementor.EnabledFilters, false));
 		}
 
 		protected virtual string GetCountSqlSelectClause()
@@ -1396,12 +1396,15 @@ namespace NHibernate.Persister.Collection
 			return HasWhere ? " and " + GetSQLWhereString(alias) : "";
 		}
 
-		public virtual string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters)
+		public virtual string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters, bool excludeDescriminator)
 		{
 			StringBuilder sessionFilterFragment = new StringBuilder();
 			filterHelper.Render(sessionFilterFragment, alias, enabledFilters);
 
-			return sessionFilterFragment.Append(FilterFragment(alias)).ToString();
+            if (excludeDescriminator)
+                return sessionFilterFragment.ToString();
+            else 
+			    return sessionFilterFragment.Append(FilterFragment(alias)).ToString();
 		}
 
 		public string OneToManyFilterFragment(string alias)
