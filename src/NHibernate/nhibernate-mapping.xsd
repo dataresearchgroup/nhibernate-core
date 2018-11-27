@@ -1480,6 +1480,7 @@
 					<xs:element ref="idbag" />
 					<xs:element ref="array" />
 					<xs:element ref="primitive-array" />
+					<xs:element ref="filter" />
 				</xs:choice>
 				<xs:element ref="union-subclass" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="loader" minOccurs="0" />

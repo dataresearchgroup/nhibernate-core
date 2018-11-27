@@ -122,6 +122,11 @@ namespace NHibernate.Mapping.ByCode.Impl.CustomizersImpl
 			CustomizersHolder.AddCustomizer(typeof (TEntity), (IUnionSubclassAttributesMapper m) => m.Schema(schemaName));
 		}
 
+		public void Filter(string filterName, Action<IFilterMapper> filterMapping)
+		{
+			CustomizersHolder.AddCustomizer(typeof(TEntity), (IUnionSubclassAttributesMapper m) => m.Filter(filterName, filterMapping));
+		}
+
 		#endregion
 
 		#region IConformistHoldersProvider Members

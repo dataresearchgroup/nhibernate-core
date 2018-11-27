@@ -50,6 +50,8 @@ namespace NHibernate.Cfg.XmlHbmBinding
 			new PropertiesBinder(mappings, unionSubclass, dialect).Bind(unionSubclassMapping.Properties, inheritedMetas);
 			BindUnionSubclasses(unionSubclassMapping.UnionSubclasses, unionSubclass, inheritedMetas);
 
+			new FiltersBinder(unionSubclass, Mappings).Bind(unionSubclassMapping.filter);
+
 			model.AddSubclass(unionSubclass);
 			mappings.AddClass(unionSubclass);
 		}

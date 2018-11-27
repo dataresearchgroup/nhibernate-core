@@ -1,3 +1,5 @@
+using System;
+
 namespace NHibernate.Mapping.ByCode
 {
 	public interface IUnionSubclassAttributesMapper : IEntityAttributesMapper, IEntitySqlsMapper
@@ -6,6 +8,7 @@ namespace NHibernate.Mapping.ByCode
 		void Catalog(string catalogName);
 		void Schema(string schemaName);
 		void Extends(System.Type baseType);
+		void Filter(string filterName, Action<IFilterMapper> filterMapping);
 		void Abstract(bool isAbstract);
 	}
 
@@ -17,6 +20,7 @@ namespace NHibernate.Mapping.ByCode
 		void Catalog(string catalogName);
 		void Schema(string schemaName);
 		void Extends(System.Type baseType);
+		void Filter(string filterName, Action<IFilterMapper> filterMapping);
 		void Abstract(bool isAbstract);
 	}
 
