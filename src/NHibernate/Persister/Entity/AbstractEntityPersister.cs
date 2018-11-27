@@ -3253,13 +3253,16 @@ namespace NHibernate.Persister.Entity
 			}
 		}
 
-		public virtual string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters)
+		public virtual string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters, bool outerJoin)
 		{
 			StringBuilder sessionFilterFragment = new StringBuilder();
 
 			filterHelper.Render(sessionFilterFragment, GenerateFilterConditionAlias(alias), GetColumnsToTableAliasMap(alias), enabledFilters);
 
-			return sessionFilterFragment.Append(FilterFragment(alias)).ToString();
+            if (outerJoin)
+                return sessionFilterFragment.ToString();
+            else
+                return sessionFilterFragment.Append(FilterFragment(alias)).ToString();
 		}
 
 		private IDictionary<string, string> GetColumnsToTableAliasMap(string rootAlias)

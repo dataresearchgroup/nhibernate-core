@@ -208,7 +208,7 @@ namespace NHibernate.Persister.Entity
 					foreach (Column col in join.RefIdProperty.ColumnIterator)
 					{
 						toKeyCols.Add(col.GetQuotedName(factory.Dialect));
-						
+
 						//find out what property index this is
 						int i = 0;
 						foreach (var prop in persistentClass.PropertyClosureIterator)
@@ -593,7 +593,7 @@ namespace NHibernate.Persister.Entity
 			return subclassTableSequentialSelect[table] && !isClassOrSuperclassTable[table];
 		}
 
-		public override string FromTableFragment(string name)
+        public override string FromTableFragment(string name)
 		{
 			return TableName + " " + name;
 		}
@@ -607,15 +607,15 @@ namespace NHibernate.Persister.Entity
 			return result;
 		}
 
-		public override string OneToManyFilterFragment(string alias)
+        public override string OneToManyFilterFragment(string alias)
 		{
 			return forceDiscriminator ? DiscriminatorFilterFragment(alias) : string.Empty;
 		}
 
 		private string DiscriminatorFilterFragment(string alias)
 		{
-			const string abstractClassWithNoSubclassExceptionMessageTemplate = 
-@"The class {0} can't be instatiated and does not have mapped subclasses; 
+			const string abstractClassWithNoSubclassExceptionMessageTemplate =
+@"The class {0} can't be instatiated and does not have mapped subclasses;
 possible solutions:
 - don't map the abstract class
 - map the its subclasses.";
