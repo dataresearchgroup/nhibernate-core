@@ -76,7 +76,7 @@ namespace NHibernate.Persister.Entity
 		//provided so we can join to keys other than the primary key
 		private readonly Dictionary<int, string[]> joinToKeyColumns;
 
-		public SingleTableEntityPersister(PersistentClass persistentClass, ICacheConcurrencyStrategy cache,
+        public SingleTableEntityPersister(PersistentClass persistentClass, ICacheConcurrencyStrategy cache,
 																			ISessionFactoryImplementor factory, IMapping mapping)
 			: base(persistentClass, cache, factory)
 		{
@@ -217,7 +217,7 @@ namespace NHibernate.Persister.Entity
 							{
 								tableIdPropertyNumbers.Add(curTableIndex, i);
 								break;
-							}
+			}
 							i++;
 						}
 
