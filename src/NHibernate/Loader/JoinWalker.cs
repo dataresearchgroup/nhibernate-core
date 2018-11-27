@@ -654,7 +654,7 @@ namespace NHibernate.Loader
 					// Apply filters in Many-To-One association
 					if (enabledFiltersForManyToOne.Count > 0)
 					{
-						string manyToOneFilterFragment = oj.Joinable.FilterFragment(oj.RHSAlias, enabledFiltersForManyToOne);
+						string manyToOneFilterFragment = oj.Joinable.FilterFragment(oj.RHSAlias, enabledFiltersForManyToOne, true);
 						bool joinClauseDoesNotContainsFilterAlready =
 							outerjoin.ToFromFragmentString.IndexOfCaseInsensitive(manyToOneFilterFragment) == -1;
 						if (joinClauseDoesNotContainsFilterAlready)
