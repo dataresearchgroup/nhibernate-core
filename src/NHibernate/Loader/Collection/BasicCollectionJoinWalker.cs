@@ -45,7 +45,7 @@ namespace NHibernate.Loader.Collection
 			SqlStringBuilder whereString = WhereString(alias, collectionPersister.KeyColumnNames, subquery, batchSize);
 
 			string manyToManyOrderBy = string.Empty;
-			string filter = collectionPersister.FilterFragment(alias, EnabledFilters, false);
+			string filter = collectionPersister.FilterFragment(alias, EnabledFilters);
 
 			if (collectionPersister.IsManyToMany)
 			{

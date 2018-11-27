@@ -541,7 +541,7 @@ namespace NHibernate.Type
 			}
 			else
 			{
-				return GetAssociatedJoinable(factory).FilterFragment(alias, enabledFilters, false);
+				return GetAssociatedJoinable(factory).FilterFragment(alias, enabledFilters);
 			}
 		}
 

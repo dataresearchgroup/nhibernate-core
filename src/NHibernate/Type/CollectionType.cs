@@ -528,7 +528,7 @@ namespace NHibernate.Type
 
 		public string GetOnCondition(string alias, ISessionFactoryImplementor factory, IDictionary<string, IFilter> enabledFilters)
 		{
-			return GetAssociatedJoinable(factory).FilterFragment(alias, enabledFilters, false);
+			return GetAssociatedJoinable(factory).FilterFragment(alias, enabledFilters);
 		}
 
 		public override object FromXMLNode(XmlNode xml, IMapping factory)

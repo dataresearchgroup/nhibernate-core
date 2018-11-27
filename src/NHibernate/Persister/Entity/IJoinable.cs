@@ -62,7 +62,7 @@ namespace NHibernate.Persister.Entity
 		/// <summary>
 		/// Get the where clause filter, given a query alias and considering enabled session filters
 		/// </summary>
-		string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters, bool excludeDiscriminator);
+		string FilterFragment(string alias, IDictionary<string, IFilter> enabledFilters);
 
 		string OneToManyFilterFragment(string alias);
 

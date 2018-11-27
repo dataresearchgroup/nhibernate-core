@@ -146,7 +146,7 @@ namespace NHibernate.Engine
 			if (rootJoinable != null)
 			{
 				joinFragment.AddCrossJoin(rootJoinable.TableName, rootAlias);
-				string filterCondition = rootJoinable.FilterFragment(rootAlias, enabledFilters, false);
+				string filterCondition = rootJoinable.FilterFragment(rootAlias, enabledFilters);
 				// JoinProcessor needs to know if the where clause fragment came from a dynamic filter or not so it
 				// can put the where clause fragment in the right place in the SQL AST.   'hasFilterCondition' keeps track
 				// of that fact.
@@ -186,7 +186,7 @@ namespace NHibernate.Engine
 					// Apply filters in Many-To-One association
 					var enabledForManyToOne = FilterHelper.GetEnabledForManyToOne(enabledFilters);
 					condition = new SqlString(string.IsNullOrEmpty(on) && enabledForManyToOne.Count > 0
-					            	? join.Joinable.FilterFragment(join.Alias, enabledForManyToOne, true)
+					            	? join.Joinable.FilterFragment(join.Alias, enabledForManyToOne)
 					            	: on);
 				}
 
