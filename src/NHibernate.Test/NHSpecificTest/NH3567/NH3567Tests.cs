@@ -50,7 +50,7 @@ namespace NHibernate.Test.NHSpecificTest.NH3567
 
 		protected override bool AppliesTo(NHibernate.Dialect.Dialect dialect)
 		{
-			return dialect is MsSql2005Dialect;
+			return dialect as MsSql2005Dialect != null;
 		}
 
 		[Test]

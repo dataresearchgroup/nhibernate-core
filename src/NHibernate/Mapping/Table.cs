@@ -25,9 +25,7 @@ namespace NHibernate.Mapping
 	[Serializable]
 	public class Table : IRelationalModel
 	{
-		[ThreadStatic]
 		private static int tableCounter;
-
 		private readonly List<string> checkConstraints = new List<string>();
 		private readonly LinkedHashMap<string, Column> columns = new LinkedHashMap<string, Column>();
 		private readonly Dictionary<ForeignKeyKey, ForeignKey> foreignKeys = new Dictionary<ForeignKeyKey, ForeignKey>();
@@ -583,11 +581,11 @@ namespace NHibernate.Mapping
 			if (old == null)
 			{
 				columns[column.CanonicalName] = column;
-				column.UniqueInteger = columns.Count;
+				column.uniqueInteger = columns.Count;
 			}
 			else
 			{
-				column.UniqueInteger = old.UniqueInteger;
+				column.uniqueInteger = old.uniqueInteger;
 			}
 		}
 

@@ -53,23 +53,23 @@ namespace NHibernate.Test.NHSpecificTest
 		{
 			TestInsert();
 
-			using(ISession s = OpenSession())
-			using (ITransaction t = s.BeginTransaction())
-			{
-				ICriteria chiefsCriteria = s.CreateCriteria(typeof(Team));
-				chiefsCriteria.Add(Expression.Eq("Name", "Chiefs"));
+			ISession s = OpenSession();
+			ITransaction t = s.BeginTransaction();
 
-				Team chiefs = (Team) chiefsCriteria.List()[0];
-				IList<Child> players = chiefs.Players;
+			ICriteria chiefsCriteria = s.CreateCriteria(typeof(Team));
+			chiefsCriteria.Add(Expression.Eq("Name", "Chiefs"));
 
-				Parent parentDad = (Parent) s.Load(typeof(Parent), 1);
-				Child amyJones = (Child) s.Load(typeof(Child), 2);
-				Child[] friends = amyJones.Friends;
+			Team chiefs = (Team) chiefsCriteria.List()[0];
+			IList<Child> players = chiefs.Players;
 
-				Child childOneRef = amyJones.FirstSibling;
+			Parent parentDad = (Parent) s.Load(typeof(Parent), 1);
+			Child amyJones = (Child) s.Load(typeof(Child), 2);
+			Child[] friends = amyJones.Friends;
 
-				t.Commit();
-			}
+			Child childOneRef = amyJones.FirstSibling;
+
+			t.Commit();
+			s.Close();
 		}
 
 		[Test]
@@ -77,130 +77,131 @@ namespace NHibernate.Test.NHSpecificTest
 		{
 			TestInsert();
 
-			using(ISession s = OpenSession())
-			using(ITransaction t = s.BeginTransaction())
+			ISession s = OpenSession();
+			ITransaction t = s.BeginTransaction();
+
+
+			Parent bobJones = (Parent) s.Load(typeof(Parent), 1);
+			ISet<Parent> friends = bobJones.AdultFriends;
+
+			int currentId = 0;
+			int previousId = 0;
+
+			foreach (Parent friend in friends)
 			{
-				Parent bobJones = (Parent) s.Load(typeof(Parent), 1);
-				ISet<Parent> friends = bobJones.AdultFriends;
+				previousId = currentId;
+				currentId = friend.Id;
 
-				int currentId = 0;
-				int previousId = 0;
-
-				foreach (Parent friend in friends)
-				{
-					previousId = currentId;
-					currentId = friend.Id;
-
-					Assert.IsTrue(currentId > previousId, "Current should have a higher Id than previous");
-				}
-
-				t.Commit();
+				Assert.IsTrue(currentId > previousId, "Current should have a higher Id than previous");
 			}
+
+			t.Commit();
+			s.Close();
 		}
 
 		[Test]
 		public void TestInsert()
 		{
-			using(ISession s = OpenSession())
-			using (ITransaction t = s.BeginTransaction())
-			{
-				SexType male = new SexType();
-				SexType female = new SexType();
+			ISession s = OpenSession();
+			ITransaction t = s.BeginTransaction();
 
-				//male.Id = 1;
-				male.TypeName = "Male";
+			SexType male = new SexType();
+			SexType female = new SexType();
 
-				//female.Id = 2;
-				female.TypeName = "Female";
+			//male.Id = 1;
+			male.TypeName = "Male";
 
-				s.Save(male);
-				s.Save(female);
+			//female.Id = 2;
+			female.TypeName = "Female";
 
-				Parent bobJones = new Parent();
-				bobJones.Id = 1;
-				bobJones.AdultName = "Bob Jones";
+			s.Save(male);
+			s.Save(female);
 
-				Parent maryJones = new Parent();
-				maryJones.Id = 2;
-				maryJones.AdultName = "Mary Jones";
+			Parent bobJones = new Parent();
+			bobJones.Id = 1;
+			bobJones.AdultName = "Bob Jones";
 
-				Parent charlieSmith = new Parent();
-				charlieSmith.Id = 3;
-				charlieSmith.AdultName = "Charlie Smith";
+			Parent maryJones = new Parent();
+			maryJones.Id = 2;
+			maryJones.AdultName = "Mary Jones";
 
-				Parent cindySmith = new Parent();
-				cindySmith.Id = 4;
-				cindySmith.AdultName = "Cindy Smith";
+			Parent charlieSmith = new Parent();
+			charlieSmith.Id = 3;
+			charlieSmith.AdultName = "Charlie Smith";
 
-				bobJones.AddFriend(cindySmith);
-				bobJones.AddFriend(charlieSmith);
-				bobJones.AddFriend(maryJones);
-				maryJones.AddFriend(cindySmith);
+			Parent cindySmith = new Parent();
+			cindySmith.Id = 4;
+			cindySmith.AdultName = "Cindy Smith";
 
-				s.Save(bobJones, bobJones.Id);
-				s.Save(maryJones, maryJones.Id);
-				s.Save(charlieSmith, charlieSmith.Id);
-				s.Save(cindySmith, cindySmith.Id);
+			bobJones.AddFriend(cindySmith);
+			bobJones.AddFriend(charlieSmith);
+			bobJones.AddFriend(maryJones);
+			maryJones.AddFriend(cindySmith);
 
-				Child johnnyJones = new Child();
-				Child amyJones = new Child();
-				Child brianSmith = new Child();
-				Child sarahSmith = new Child();
+			s.Save(bobJones, bobJones.Id);
+			s.Save(maryJones, maryJones.Id);
+			s.Save(charlieSmith, charlieSmith.Id);
+			s.Save(cindySmith, cindySmith.Id);
 
-				johnnyJones.Id = 1;
-				johnnyJones.FullName = "Johnny Jones";
-				johnnyJones.Dad = bobJones;
-				johnnyJones.Mom = maryJones;
-				johnnyJones.Sex = male;
-				johnnyJones.Friends = new Child[] {brianSmith, sarahSmith};
-				johnnyJones.FavoriteDate = DateTime.Parse("2003-08-16");
+			Child johnnyJones = new Child();
+			Child amyJones = new Child();
+			Child brianSmith = new Child();
+			Child sarahSmith = new Child();
 
-				amyJones.Id = 2;
-				amyJones.FullName = "Amy Jones";
-				amyJones.Dad = bobJones;
-				amyJones.Mom = maryJones;
-				amyJones.Sex = female;
-				amyJones.FirstSibling = johnnyJones;
-				amyJones.Friends = new Child[] {johnnyJones, sarahSmith};
+			johnnyJones.Id = 1;
+			johnnyJones.FullName = "Johnny Jones";
+			johnnyJones.Dad = bobJones;
+			johnnyJones.Mom = maryJones;
+			johnnyJones.Sex = male;
+			johnnyJones.Friends = new Child[] {brianSmith, sarahSmith};
+			johnnyJones.FavoriteDate = DateTime.Parse("2003-08-16");
 
-				brianSmith.Id = 11;
-				brianSmith.FullName = "Brian Smith";
-				brianSmith.Dad = charlieSmith;
-				brianSmith.Mom = cindySmith;
-				brianSmith.Sex = male;
-				brianSmith.Friends = new Child[] {johnnyJones, amyJones, sarahSmith};
+			amyJones.Id = 2;
+			amyJones.FullName = "Amy Jones";
+			amyJones.Dad = bobJones;
+			amyJones.Mom = maryJones;
+			amyJones.Sex = female;
+			amyJones.FirstSibling = johnnyJones;
+			amyJones.Friends = new Child[] {johnnyJones, sarahSmith};
 
-				sarahSmith.Id = 12;
-				sarahSmith.FullName = "Sarah Smith";
-				sarahSmith.Dad = charlieSmith;
-				sarahSmith.Mom = cindySmith;
-				sarahSmith.Sex = female;
-				sarahSmith.Friends = new Child[] {brianSmith};
+			brianSmith.Id = 11;
+			brianSmith.FullName = "Brian Smith";
+			brianSmith.Dad = charlieSmith;
+			brianSmith.Mom = cindySmith;
+			brianSmith.Sex = male;
+			brianSmith.Friends = new Child[] {johnnyJones, amyJones, sarahSmith};
 
-				Team royals = new Team();
-				royals.Name = "Royals";
+			sarahSmith.Id = 12;
+			sarahSmith.FullName = "Sarah Smith";
+			sarahSmith.Dad = charlieSmith;
+			sarahSmith.Mom = cindySmith;
+			sarahSmith.Sex = female;
+			sarahSmith.Friends = new Child[] {brianSmith};
 
-				Team chiefs = new Team();
-				chiefs.Name = "Chiefs";
+			Team royals = new Team();
+			royals.Name = "Royals";
 
-				royals.Players = new List<Child>();
-				royals.Players.Add(amyJones);
-				royals.Players.Add(brianSmith);
+			Team chiefs = new Team();
+			chiefs.Name = "Chiefs";
 
-				chiefs.Players = new List<Child>();
-				chiefs.Players.Add(johnnyJones);
-				chiefs.Players.Add(sarahSmith);
+			royals.Players = new List<Child>();
+			royals.Players.Add(amyJones);
+			royals.Players.Add(brianSmith);
 
-				s.Save(johnnyJones, johnnyJones.Id);
-				s.Save(amyJones, amyJones.Id);
-				s.Save(brianSmith, brianSmith.Id);
-				s.Save(sarahSmith, sarahSmith.Id);
+			chiefs.Players = new List<Child>();
+			chiefs.Players.Add(johnnyJones);
+			chiefs.Players.Add(sarahSmith);
 
-				s.Save(royals);
-				s.Save(chiefs);
+			s.Save(johnnyJones, johnnyJones.Id);
+			s.Save(amyJones, amyJones.Id);
+			s.Save(brianSmith, brianSmith.Id);
+			s.Save(sarahSmith, sarahSmith.Id);
 
-				t.Commit();
-			}
+			s.Save(royals);
+			s.Save(chiefs);
+
+			t.Commit();
+			s.Close();
 		}
 	}
 }

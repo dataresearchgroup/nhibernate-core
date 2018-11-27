@@ -15,26 +15,28 @@ namespace NHibernate.Dialect
 	{
 		private readonly string _sqlOpToken;
 		private readonly bool _isNot;
+        private Queue _args;
+		private SqlStringBuilder _sqlBuffer;
 
 		/// <summary>
-		/// Creates an instance using the giving token.
+		/// creates an instance using the giving token
 		/// </summary>
 		/// <param name="sqlOpToken">
-		/// The operation token.
+		/// The operation token
 		/// </param>
 		/// <remarks>
-		/// Use this constructor only if the token DOES NOT represent an unary operator.
+		/// Use this constructor only if the token DOES NOT represent a NOT-Operation
 		/// </remarks>
 		public BitwiseNativeOperation(string sqlOpToken)
 			: this(sqlOpToken, false)
 		{
 		}
 
-		/// <summary>
-		/// Creates an instance using the giving token and the flag indicating if it is an unary operator.
-		/// </summary>
-		/// <param name="sqlOpToken">The operation token.</param>
-		/// <param name="isNot">Whether the operation is unary or not.</param>
+        /// <summary>
+		/// creates an instance using the giving token and the flag indicating a NOT-Operation
+        /// </summary>
+        /// <param name="sqlOpToken"></param>
+        /// <param name="isNot"></param>
 		public BitwiseNativeOperation(string sqlOpToken, bool isNot)
 		{
 			_sqlOpToken = sqlOpToken;
@@ -43,46 +45,64 @@ namespace NHibernate.Dialect
 
 		#region ISQLFunction Members
 
-		/// <inheritdoc />
 		public IType ReturnType(IType columnType, IMapping mapping)
 		{
 			return NHibernateUtil.Int64;
 		}
 
-		/// <inheritdoc />
-		public bool HasArguments => true;
+		public bool HasArguments
+		{
+			get { return true; }
+		}
 
-		/// <inheritdoc />
-		public bool HasParenthesesIfNoArguments => false;
+		public bool HasParenthesesIfNoArguments
+		{
+			get { return false; }
+		}
 
-		/// <inheritdoc />
 		public SqlString Render(IList args, ISessionFactoryImplementor factory)
 		{
-			if (args.Count == 0)
-				throw new ArgumentException("Function argument list cannot be empty", nameof(args));
+			Prepare(args);
+			if (_isNot == false)
+				AddFirstArgument();
+			AddToken();
+			AddRestOfArguments();
 
-			var sqlBuffer = new SqlStringBuilder();
-
-			if (!_isNot)
-				AddToBuffer(args[0], sqlBuffer);
-
-			sqlBuffer.Add(" ").Add(_sqlOpToken).Add(" ");
-			for (var i = _isNot ? 0 : 1; i < args.Count; i++)
-			{
-				AddToBuffer(args[i], sqlBuffer);
-			}
-
-			return sqlBuffer.ToSqlString();
+			return _sqlBuffer.ToSqlString();
 		}
 
 		#endregion
 
-		private static void AddToBuffer(object arg, SqlStringBuilder buffer)
+		private void Prepare(IList args)
+		{
+			_sqlBuffer = new SqlStringBuilder();
+			_args = new Queue(args);
+		}
+
+		private void AddFirstArgument()
+		{
+			AddToBuffer(_args.Dequeue());
+		}
+
+		private void AddToken()
+		{
+			AddToBuffer(string.Format(" {0} ", _sqlOpToken));
+		}
+
+		private void AddRestOfArguments()
+		{
+			while (_args.Count > 0)
+			{
+				AddToBuffer(_args.Dequeue());
+			}
+		}
+
+		private void AddToBuffer(object arg)
 		{
 			if (arg is Parameter || arg is SqlString)
-				buffer.AddObject(arg);
+				_sqlBuffer.AddObject(arg);
 			else
-				buffer.Add(arg.ToString());
+				_sqlBuffer.Add(arg.ToString());
 		}
 	}
 }

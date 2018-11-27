@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Data;
 using NHibernate.Dialect;
-using NHibernate.Driver;
-using NHibernate.Engine;
 using NHibernate.Exceptions;
 using NHibernate.Util;
 using NUnit.Framework;
@@ -23,51 +21,36 @@ namespace NHibernate.Test.ExceptionsTest
 			get { return new[] { "ExceptionsTest.User.hbm.xml", "ExceptionsTest.Group.hbm.xml" }; }
 		}
 
-		protected override bool AppliesTo(Dialect.Dialect dialect)
-		{
-			return dialect is MsSql2000Dialect || dialect is PostgreSQLDialect || dialect is FirebirdDialect || dialect is Oracle8iDialect;
-		}
-
-		protected override bool AppliesTo(ISessionFactoryImplementor factory)
-		{
-			var driver = factory.ConnectionProvider.Driver;
-			return !(driver is OracleDataClientDriver) && !(driver is OracleManagedDataClientDriver) && !(driver is OracleLiteDataClientDriver) && !(driver is OdbcDriver) && !(driver is OleDbDriver);
-		}
-
 		protected override void Configure(Cfg.Configuration configuration)
 		{
 			if(Dialect is MsSql2000Dialect)
 			{
-				configuration.SetProperty(
-					Cfg.Environment.SqlExceptionConverter,
-					typeof(MSSQLExceptionConverterExample).AssemblyQualifiedName);
+				configuration.SetProperty(Cfg.Environment.SqlExceptionConverter,
+				                          typeof (MSSQLExceptionConverterExample).AssemblyQualifiedName);
 			}
-
 			if (Dialect is Oracle8iDialect)
 			{
-				configuration.SetProperty(
-					Cfg.Environment.SqlExceptionConverter,
-					typeof(OracleClientExceptionConverterExample).AssemblyQualifiedName);
+				configuration.SetProperty(Cfg.Environment.SqlExceptionConverter,
+																	typeof(OracleClientExceptionConverterExample).AssemblyQualifiedName);
 			}
 
 			if (Dialect is PostgreSQLDialect)
 			{
-				configuration.SetProperty(
-					Cfg.Environment.SqlExceptionConverter,
-					typeof(PostgresExceptionConverterExample).AssemblyQualifiedName);
+				configuration.SetProperty(Cfg.Environment.SqlExceptionConverter,
+																	typeof(PostgresExceptionConverterExample).AssemblyQualifiedName);
 			}
 
 			if (Dialect is FirebirdDialect)
 			{
-				configuration.SetProperty(
-					Cfg.Environment.SqlExceptionConverter,
-					typeof(FbExceptionConverterExample).AssemblyQualifiedName);
+				configuration.SetProperty(Cfg.Environment.SqlExceptionConverter, typeof(FbExceptionConverterExample).AssemblyQualifiedName);
 			}
 		}
 
 		[Test]
 		public void IntegrityViolation()
 		{
+			if (Dialect is SQLiteDialect)
+				Assert.Ignore("Example exception converter not implemented.");
 
 			//ISQLExceptionConverter converter = Dialect.BuildSQLExceptionConverter();
 			ISQLExceptionConverter converter = sessions.Settings.SqlExceptionConverter;
@@ -132,6 +115,9 @@ namespace NHibernate.Test.ExceptionsTest
 		[Test]
 		public void BadGrammar()
 		{
+			if (Dialect is SQLiteDialect)
+				Assert.Ignore("Example exception converter not implemented.");
+
 			//ISQLExceptionConverter converter = Dialect.BuildSQLExceptionConverter();
 			ISQLExceptionConverter converter = sessions.Settings.SqlExceptionConverter;
 

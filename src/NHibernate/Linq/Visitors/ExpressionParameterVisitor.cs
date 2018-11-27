@@ -33,14 +33,9 @@ namespace NHibernate.Linq.Visitors
 
 		public static IDictionary<ConstantExpression, NamedParameter> Visit(Expression expression, ISessionFactoryImplementor sessionFactory)
 		{
-			return Visit(ref expression, sessionFactory);
-		}
-
-		internal static IDictionary<ConstantExpression, NamedParameter> Visit(ref Expression expression, ISessionFactoryImplementor sessionFactory)
-		{
 			var visitor = new ExpressionParameterVisitor(sessionFactory);
-
-			expression = visitor.VisitExpression(expression);
+			
+			visitor.VisitExpression(expression);
 
 			return visitor._parameters;
 		}
@@ -49,10 +44,10 @@ namespace NHibernate.Linq.Visitors
 		{
 			if (expression.Method.Name == "MappedAs" && expression.Method.DeclaringType == typeof(LinqExtensionMethods))
 			{
-				var parameter = (ConstantExpression)VisitExpression(expression.Arguments[0]);
-				var type = (ConstantExpression)expression.Arguments[1];
+				var parameter = (ConstantExpression) VisitExpression(expression.Arguments[0]);
+				var type = (ConstantExpression) expression.Arguments[1];
 
-				_parameters[parameter].Type = (IType)type.Value;
+				_parameters[parameter].Type = (IType) type.Value;
 
 				return parameter;
 			}
@@ -86,7 +81,6 @@ namespace NHibernate.Linq.Visitors
 			if (!_parameters.ContainsKey(expression) && !typeof(IQueryable).IsAssignableFrom(expression.Type) && !IsNullObject(expression))
 			{
 				// We use null for the type to indicate that the caller should let HQL figure it out.
-				object value = expression.Value;
 				IType type = null;
 
 				// We have a bit more information about the null parameter value.
@@ -94,18 +88,12 @@ namespace NHibernate.Linq.Visitors
 				if (expression.Value == null)
 					type = NHibernateUtil.GuessType(expression.Type);
 
-				// Constant characters should be sent as strings
-				if (expression.Type == typeof(char))
-				{
-					value = value.ToString();
-				}
-
 				// There is more information available in the Linq expression than to HQL directly.
 				// In some cases it might be advantageous to use the extra info.  Assuming this
 				// comes up, it would be nice to combine the HQL parameter type determination code
 				// and the Expression information.
 
-				_parameters.Add(expression, new NamedParameter("p" + (_parameters.Count + 1), value, type));
+				_parameters.Add(expression, new NamedParameter("p" + (_parameters.Count + 1), expression.Value, type));
 			}
 
 			return base.VisitConstantExpression(expression);

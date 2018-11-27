@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using log4net;
+using NHibernate.Util;
 using NUnit.Framework;
 
 namespace NHibernate.Test.UtilityTest
@@ -23,36 +23,42 @@ namespace NHibernate.Test.UtilityTest
 		[Test, Explicit]
 		public void MultiThreadAccess()
 		{
-			MultiThreadRunner<ConcurrentDictionary<int, int>>.ExecuteAction[] actions =
-				new MultiThreadRunner<ConcurrentDictionary<int, int>>.ExecuteAction[]
+			MultiThreadRunner<IDictionary<int, int>>.ExecuteAction[] actions =
+				new MultiThreadRunner<IDictionary<int, int>>.ExecuteAction[]
 					{
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
 							{
-								log.DebugFormat("T{0} Add", Thread.CurrentThread.Name);
-								write++;
-								d.TryAdd(rnd.Next(), rnd.Next());
+								try
+								{
+									log.DebugFormat("T{0} Add", Thread.CurrentThread.Name);
+									write++;
+									d.Add(rnd.Next(), rnd.Next());
+								}
+								catch (ArgumentException)
+								{
+									// duplicated key
+								}
 							}, 
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
 						 	{
 								log.DebugFormat("T{0} ContainsKey", Thread.CurrentThread.Name);
 					   		read++;
 					   		d.ContainsKey(rnd.Next());
 					   	}, 
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
 			   	   	{
 								log.DebugFormat("T{0} Remove", Thread.CurrentThread.Name);
 			   	   		write++;
-			   	   		int value;
-			   	   		d.TryRemove(rnd.Next(), out value);
+			   	   		d.Remove(rnd.Next());
 			   	   	}, 
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
 	   	   	   	{
 								log.DebugFormat("T{0} TryGetValue", Thread.CurrentThread.Name);
 	   	   	   		read++;
 	   	   	   		int val;
 	   	   	   		d.TryGetValue(rnd.Next(), out val);
 	   	   	   	}, 
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
  	   	   	   	{
  	   	   	   		try
  	   	   	   		{
@@ -65,25 +71,25 @@ namespace NHibernate.Test.UtilityTest
  	   	   	   			// not foud key
  	   	   	   		}
  	   	   	   	}, 
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
  	   	   	   	{
 								log.DebugFormat("T{0} set_this[]", Thread.CurrentThread.Name);
  	   	   	   		write++;
  	   	   	   		d[rnd.Next()] = rnd.Next();
  	   	   	   	},
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
 							{
 								log.DebugFormat("T{0} Keys", Thread.CurrentThread.Name);
 								read++;
 								IEnumerable<int> e = d.Keys;
 							},
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
 					   	{
 								log.DebugFormat("T{0} Values", Thread.CurrentThread.Name);
 					   		read++;
 					   		IEnumerable<int> e = d.Values;
 					   	}, 
-						delegate(ConcurrentDictionary<int, int> d)
+						delegate(IDictionary<int, int> d)
 			   	   	{
 								log.DebugFormat("T{0} GetEnumerator", Thread.CurrentThread.Name);
 			   	   		read++;
@@ -93,8 +99,8 @@ namespace NHibernate.Test.UtilityTest
 			   	   		}
 			   	   	},
 					};
-			MultiThreadRunner<ConcurrentDictionary<int, int>> mtr = new MultiThreadRunner<ConcurrentDictionary<int, int>>(20, actions);
-			ConcurrentDictionary<int, int> wrapper = new ConcurrentDictionary<int, int>();
+			MultiThreadRunner<IDictionary<int, int>> mtr = new MultiThreadRunner<IDictionary<int, int>>(20, actions);
+			IDictionary<int, int> wrapper = new ThreadSafeDictionary<int, int>(new Dictionary<int, int>());
 			mtr.EndTimeout = 2000;
 			mtr.Run(wrapper);
 			log.DebugFormat("{0} reads, {1} writes -- elements {2}", read, write, wrapper.Count);

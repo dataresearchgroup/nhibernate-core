@@ -151,18 +151,16 @@ namespace NHibernate.Test.Operations
 		{
 			ClearCounts();
 
+			ISession s = OpenSession();
+			ITransaction tx = s.BeginTransaction();
 			var root = new Node {Name = "root"};
 			var child = new Node {Name = "child"};
 			var grandchild = new Node {Name = "grandchild"};
-
-			using (ISession s = OpenSession())
-			using (ITransaction tx = s.BeginTransaction())
-			{
-				root.AddChild(child);
-				child.AddChild(grandchild);
-				s.Merge(root);
-				tx.Commit();
-			}
+			root.AddChild(child);
+			child.AddChild(grandchild);
+			s.Merge(root);
+			tx.Commit();
+			s.Close();
 
 			AssertInsertCount(3);
 			AssertUpdateCount(0);
@@ -172,12 +170,11 @@ namespace NHibernate.Test.Operations
 			var grandchild2 = new Node {Name = "grandchild2"};
 			child.AddChild(grandchild2);
 
-			using (var s = OpenSession())
-			using (var tx = s.BeginTransaction())
-			{
-				s.Merge(root);
-				tx.Commit();
-			}
+			s = OpenSession();
+			tx = s.BeginTransaction();
+			s.Merge(root);
+			tx.Commit();
+			s.Close();
 
 			AssertInsertCount(1);
 			AssertUpdateCount(1);
@@ -188,28 +185,26 @@ namespace NHibernate.Test.Operations
 			child2.AddChild(grandchild3);
 			root.AddChild(child2);
 
-			using (var s = OpenSession())
-			using (var tx = s.BeginTransaction())
-			{
-				s.Merge(root);
-				tx.Commit();
-			}
+			s = OpenSession();
+			tx = s.BeginTransaction();
+			s.Merge(root);
+			tx.Commit();
+			s.Close();
 
 			AssertInsertCount(2);
 			AssertUpdateCount(0);
 			ClearCounts();
 
-			using (var s = OpenSession())
-			using (var tx = s.BeginTransaction())
-			{
-				s.Delete(grandchild);
-				s.Delete(grandchild2);
-				s.Delete(grandchild3);
-				s.Delete(child);
-				s.Delete(child2);
-				s.Delete(root);
-				tx.Commit();
-			}
+			s = OpenSession();
+			tx = s.BeginTransaction();
+			s.Delete(grandchild);
+			s.Delete(grandchild2);
+			s.Delete(grandchild3);
+			s.Delete(child);
+			s.Delete(child2);
+			s.Delete(root);
+			tx.Commit();
+			s.Close();
 		}
 
 		[Test]
@@ -288,128 +283,110 @@ namespace NHibernate.Test.Operations
 		[Test]
 		public void MergeManaged()
 		{
-			using (ISession s = OpenSession())
-			{
-				NumberedNode root;
-				using (ITransaction tx = s.BeginTransaction())
-				{
-					root = new NumberedNode("root");
-					s.Persist(root);
-					tx.Commit();
-				}
-				ClearCounts();
+			ISession s = OpenSession();
+			ITransaction tx = s.BeginTransaction();
+			var root = new NumberedNode("root");
+			s.Persist(root);
+			tx.Commit();
 
-				NumberedNode mergedChild;
-				using (var tx = s.BeginTransaction())
-				{
-					var child = new NumberedNode("child");
-					root.AddChild(child);
-					Assert.That(s.Merge(root), Is.SameAs(root));
-					IEnumerator<NumberedNode> rit = root.Children.GetEnumerator();
-					rit.MoveNext();
-					mergedChild = rit.Current;
-					Assert.That(mergedChild, Is.Not.SameAs(child));
-					Assert.That(s.Contains(mergedChild));
-					Assert.That(!s.Contains(child));
-					Assert.That(root.Children.Count, Is.EqualTo(1));
-					Assert.That(root.Children.Contains(mergedChild));
-					//assertNotSame( mergedChild, s.Merge(child) ); //yucky :(
-					tx.Commit();
-				}
+			ClearCounts();
 
-				AssertInsertCount(1);
-				AssertUpdateCount(0);
+			tx = s.BeginTransaction();
+			var child = new NumberedNode("child");
+			root.AddChild(child);
+			Assert.That(s.Merge(root), Is.SameAs(root));
+			IEnumerator<NumberedNode> rit = root.Children.GetEnumerator();
+			rit.MoveNext();
+			NumberedNode mergedChild = rit.Current;
+			Assert.That(mergedChild, Is.Not.SameAs(child));
+			Assert.That(s.Contains(mergedChild));
+			Assert.That(! s.Contains(child));
+			Assert.That(root.Children.Count, Is.EqualTo(1));
+			Assert.That(root.Children.Contains(mergedChild));
+			//assertNotSame( mergedChild, s.Merge(child) ); //yucky :(
+			tx.Commit();
 
-				Assert.That(root.Children.Count, Is.EqualTo(1));
-				Assert.That(root.Children.Contains(mergedChild));
+			AssertInsertCount(1);
+			AssertUpdateCount(0);
 
-				using (var tx = s.BeginTransaction())
-				{
-					Assert.That(
-						s.CreateCriteria(typeof(NumberedNode)).SetProjection(Projections.RowCount()).UniqueResult(),
-						Is.EqualTo(2));
-					tx.Rollback();
-				}
-			}
+			Assert.That(root.Children.Count, Is.EqualTo(1));
+			Assert.That(root.Children.Contains(mergedChild));
+
+			tx = s.BeginTransaction();
+			Assert.That(s.CreateCriteria(typeof (NumberedNode)).SetProjection(Projections.RowCount()).UniqueResult(),
+			            Is.EqualTo(2));
+			tx.Rollback();
+			s.Close();
 		}
 
 		[Test]
 		public void MergeManyToManyWithCollectionDeference()
 		{
 			// setup base data...
-			Competition competition;
-			using (ISession s = OpenSession())
-			using (ITransaction tx = s.BeginTransaction())
-			{
-				competition = new Competition();
-				competition.Competitors.Add(new Competitor {Name = "Name"});
-				competition.Competitors.Add(new Competitor());
-				competition.Competitors.Add(new Competitor());
-				s.Persist(competition);
-				tx.Commit();
-			}
+			ISession s = OpenSession();
+			ITransaction tx = s.BeginTransaction();
+			var competition = new Competition();
+			competition.Competitors.Add(new Competitor {Name = "Name"});
+			competition.Competitors.Add(new Competitor());
+			competition.Competitors.Add(new Competitor());
+			s.Persist(competition);
+			tx.Commit();
+			s.Close();
 
 			// the competition graph is now detached:
 			//   1) create a new List reference to represent the competitors
-			Competition competition2;
-			using (var s = OpenSession())
-			using (var tx = s.BeginTransaction())
-			{
-				var newComp = new List<Competitor>();
-				Competitor originalCompetitor = competition.Competitors[0];
-				originalCompetitor.Name = "Name2";
-				newComp.Add(originalCompetitor);
-				newComp.Add(new Competitor());
-				//   2) set that new List reference unto the Competition reference
-				competition.Competitors = newComp;
-				//   3) attempt the merge
-				competition2 = (Competition) s.Merge(competition);
-				tx.Commit();
-			}
+			s = OpenSession();
+			tx = s.BeginTransaction();
+			var newComp = new List<Competitor>();
+			Competitor originalCompetitor = competition.Competitors[0];
+			originalCompetitor.Name = "Name2";
+			newComp.Add(originalCompetitor);
+			newComp.Add(new Competitor());
+			//   2) set that new List reference unto the Competition reference
+			competition.Competitors = newComp;
+			//   3) attempt the merge
+			var competition2 = (Competition) s.Merge(competition);
+			tx.Commit();
+			s.Close();
 
 			Assert.That(!(competition == competition2));
 			Assert.That(!(competition.Competitors == competition2.Competitors));
 			Assert.That(competition2.Competitors.Count, Is.EqualTo(2));
 
-			using (var s = OpenSession())
-			using (var tx = s.BeginTransaction())
-			{
-				competition = s.Get<Competition>(competition.Id);
-				Assert.That(competition.Competitors.Count, Is.EqualTo(2));
-				s.Delete(competition);
-				tx.Commit();
-			}
+			s = OpenSession();
+			tx = s.BeginTransaction();
+			competition = s.Get<Competition>(competition.Id);
+			Assert.That(competition.Competitors.Count, Is.EqualTo(2));
+			s.Delete(competition);
+			tx.Commit();
+			s.Close();
 		}
 
 		[Test]
 		public void MergeStaleVersionFails()
 		{
+			ISession s = OpenSession();
+			s.BeginTransaction();
 			var entity = new VersionedEntity {Id = "entity", Name = "entity"};
-			using(ISession s = OpenSession())
-			using(s.BeginTransaction())
-			{
-				s.Persist(entity);
-				s.Transaction.Commit();
-			}
+			s.Persist(entity);
+			s.Transaction.Commit();
+			s.Close();
 
 			// make the detached 'entity' reference stale...
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				var entity2 = s.Get<VersionedEntity>(entity.Id);
-				entity2.Name = "entity-name";
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			var entity2 = s.Get<VersionedEntity>(entity.Id);
+			entity2.Name = "entity-name";
+			s.Transaction.Commit();
+			s.Close();
 
 			// now try to reattch it
-			ISession s2 = null;
+			s = OpenSession();
+			s.BeginTransaction();
 			try
 			{
-				s2 = OpenSession();
-				s2.BeginTransaction();
-
-				s2.Merge(entity);
-				s2.Transaction.Commit();
+				s.Merge(entity);
+				s.Transaction.Commit();
 				Assert.Fail("was expecting staleness error");
 			}
 			catch (StaleObjectStateException)
@@ -418,11 +395,8 @@ namespace NHibernate.Test.Operations
 			}
 			finally
 			{
-				if (s2 != null)
-				{
-					s2.Transaction.Rollback();
-					s2.Close();
-				}
+				s.Transaction.Rollback();
+				s.Close();
 				Cleanup();
 			}
 		}
@@ -432,15 +406,14 @@ namespace NHibernate.Test.Operations
 		{
 			ClearCounts();
 
+			ISession s = OpenSession();
+			ITransaction tx = s.BeginTransaction();
 			var root = new Node {Name = "root"};
 			var child = new Node {Name = "child"};
-			using(ISession s = OpenSession())
-			using (ITransaction tx = s.BeginTransaction())
-			{
-				root.AddChild(child);
-				s.Persist(root);
-				tx.Commit();
-			}
+			root.AddChild(child);
+			s.Persist(root);
+			tx.Commit();
+			s.Close();
 
 			AssertInsertCount(2);
 			ClearCounts();
@@ -452,12 +425,11 @@ namespace NHibernate.Test.Operations
 
 			root.AddChild(secondChild);
 
-			using(var s = OpenSession())
-			using (var tx = s.BeginTransaction())
-			{
-				s.Merge(root);
-				tx.Commit();
-			}
+			s = OpenSession();
+			tx = s.BeginTransaction();
+			s.Merge(root);
+			tx.Commit();
+			s.Close();
 
 			AssertInsertCount(1);
 			AssertUpdateCount(2);
@@ -468,15 +440,14 @@ namespace NHibernate.Test.Operations
 		{
 			ClearCounts();
 
+			ISession s = OpenSession();
+			ITransaction tx = s.BeginTransaction();
 			var root = new NumberedNode("root");
 			var child = new NumberedNode("child");
-			using(ISession s = OpenSession())
-			using (ITransaction tx = s.BeginTransaction())
-			{
-				root.AddChild(child);
-				s.Persist(root);
-				tx.Commit();
-			}
+			root.AddChild(child);
+			s.Persist(root);
+			tx.Commit();
+			s.Close();
 
 			AssertInsertCount(2);
 			ClearCounts();
@@ -488,12 +459,11 @@ namespace NHibernate.Test.Operations
 
 			root.AddChild(secondChild);
 
-			using(var s = OpenSession())
-			using (var tx = s.BeginTransaction())
-			{
-				s.Merge(root);
-				tx.Commit();
-			}
+			s = OpenSession();
+			tx = s.BeginTransaction();
+			s.Merge(root);
+			tx.Commit();
+			s.Close();
 
 			AssertInsertCount(1);
 			AssertUpdateCount(2);
@@ -502,24 +472,22 @@ namespace NHibernate.Test.Operations
 		[Test]
 		public void NoExtraUpdatesOnMerge()
 		{
+			ISession s = OpenSession();
+			s.BeginTransaction();
 			var node = new Node {Name = "test"};
-			using(ISession s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				s.Persist(node);
-				s.Transaction.Commit();
-			}
+			s.Persist(node);
+			s.Transaction.Commit();
+			s.Close();
 
 			ClearCounts();
 
 			// node is now detached, but we have made no changes.  so attempt to merge it
 			// into this new session; this should cause no updates...
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				node = (Node) s.Merge(node);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			node = (Node) s.Merge(node);
+			s.Transaction.Commit();
+			s.Close();
 
 			AssertUpdateCount(0);
 			AssertInsertCount(0);
@@ -528,12 +496,11 @@ namespace NHibernate.Test.Operations
 			// as a control measure, now update the node while it is detached and
 			// make sure we get an update as a result...
 			node.Description = "new description";
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				node = (Node) s.Merge(node);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			node = (Node) s.Merge(node);
+			s.Transaction.Commit();
+			s.Close();
 			AssertUpdateCount(1);
 			AssertInsertCount(0);
 			///////////////////////////////////////////////////////////////////////
@@ -542,25 +509,22 @@ namespace NHibernate.Test.Operations
 		[Test]
 		public void NoExtraUpdatesOnMergeVersioned()
 		{
+			ISession s = OpenSession();
+			s.BeginTransaction();
 			var entity = new VersionedEntity {Id = "entity", Name = "entity"};
-			using (ISession s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				s.Persist(entity);
-				s.Transaction.Commit();
-			}
+			s.Persist(entity);
+			s.Transaction.Commit();
+			s.Close();
 
 			ClearCounts();
 
 			// entity is now detached, but we have made no changes.  so attempt to merge it
 			// into this new session; this should cause no updates...
-			VersionedEntity mergedEntity;
-			using (var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				mergedEntity = (VersionedEntity) s.Merge(entity);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			var mergedEntity = (VersionedEntity) s.Merge(entity);
+			s.Transaction.Commit();
+			s.Close();
 
 			AssertUpdateCount(0);
 			AssertInsertCount(0);
@@ -570,12 +534,11 @@ namespace NHibernate.Test.Operations
 			// as a control measure, now update the node while it is detached and
 			// make sure we get an update as a result...
 			entity.Name = "new name";
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				entity = (VersionedEntity) s.Merge(entity);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			entity = (VersionedEntity) s.Merge(entity);
+			s.Transaction.Commit();
+			s.Close();
 			AssertUpdateCount(1);
 			AssertInsertCount(0);
 			///////////////////////////////////////////////////////////////////////
@@ -584,29 +547,25 @@ namespace NHibernate.Test.Operations
 		[Test]
 		public void NoExtraUpdatesOnMergeVersionedWithCollection()
 		{
+			ISession s = OpenSession();
+			s.BeginTransaction();
 			var parent = new VersionedEntity {Id = "parent", Name = "parent"};
 			var child = new VersionedEntity {Id = "child", Name = "child"};
-
-			using(ISession s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				parent.Children.Add(child);
-				child.Parent = parent;
-				s.Persist(parent);
-				s.Transaction.Commit();
-			}
+			parent.Children.Add(child);
+			child.Parent = parent;
+			s.Persist(parent);
+			s.Transaction.Commit();
+			s.Close();
 
 			ClearCounts();
 
 			// parent is now detached, but we have made no changes.  so attempt to merge it
 			// into this new session; this should cause no updates...
-			VersionedEntity mergedParent;
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				mergedParent = (VersionedEntity) s.Merge(parent);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			var mergedParent = (VersionedEntity) s.Merge(parent);
+			s.Transaction.Commit();
+			s.Close();
 
 			AssertUpdateCount(0);
 			AssertInsertCount(0);
@@ -621,12 +580,11 @@ namespace NHibernate.Test.Operations
 			// make sure we get an update as a result...
 			mergedParent.Name = "new name";
 			mergedParent.Children.Add(new VersionedEntity {Id = "child2", Name = "new child"});
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				parent = (VersionedEntity) s.Merge(mergedParent);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			parent = (VersionedEntity) s.Merge(mergedParent);
+			s.Transaction.Commit();
+			s.Close();
 			AssertUpdateCount(1);
 			AssertInsertCount(1);
 			///////////////////////////////////////////////////////////////////////
@@ -635,27 +593,25 @@ namespace NHibernate.Test.Operations
 		[Test]
 		public void NoExtraUpdatesOnMergeWithCollection()
 		{
+			ISession s = OpenSession();
+			s.BeginTransaction();
 			var parent = new Node {Name = "parent"};
-			using(ISession s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				var child = new Node {Name = "child"};
-				parent.Children.Add(child);
-				child.Parent = parent;
-				s.Persist(parent);
-				s.Transaction.Commit();
-			}
+			var child = new Node {Name = "child"};
+			parent.Children.Add(child);
+			child.Parent = parent;
+			s.Persist(parent);
+			s.Transaction.Commit();
+			s.Close();
 
 			ClearCounts();
 
 			// parent is now detached, but we have made no changes.  so attempt to merge it
 			// into this new session; this should cause no updates...
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				parent = (Node) s.Merge(parent);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			parent = (Node) s.Merge(parent);
+			s.Transaction.Commit();
+			s.Close();
 
 			AssertUpdateCount(0);
 			AssertInsertCount(0);
@@ -667,12 +623,11 @@ namespace NHibernate.Test.Operations
 			it.MoveNext();
 			it.Current.Description = "child's new description";
 			parent.Children.Add(new Node {Name = "second child"});
-			using(var s = OpenSession())
-			using (s.BeginTransaction())
-			{
-				parent = (Node) s.Merge(parent);
-				s.Transaction.Commit();
-			}
+			s = OpenSession();
+			s.BeginTransaction();
+			parent = (Node) s.Merge(parent);
+			s.Transaction.Commit();
+			s.Close();
 			AssertUpdateCount(1);
 			AssertInsertCount(1);
 			///////////////////////////////////////////////////////////////////////
@@ -681,51 +636,49 @@ namespace NHibernate.Test.Operations
 		[Test]
 		public void PersistThenMergeInSameTxnWithTimestamp()
 		{
-			using(ISession s = OpenSession())
-			using (ITransaction tx = s.BeginTransaction())
+			ISession s = OpenSession();
+			ITransaction tx = s.BeginTransaction();
+			var entity = new TimestampedEntity {Id = "test", Name = "test"};
+			s.Persist(entity);
+			s.Merge(new TimestampedEntity {Id = "test", Name = "test-2"});
+
+			try
 			{
-				var entity = new TimestampedEntity {Id = "test", Name = "test"};
-				s.Persist(entity);
-				s.Merge(new TimestampedEntity {Id = "test", Name = "test-2"});
-
-				try
-				{
-					// control operation...
-					s.SaveOrUpdate(new TimestampedEntity {Id = "test", Name = "test-3"});
-					Assert.Fail("saveOrUpdate() should fail here");
-				}
-				catch (NonUniqueObjectException)
-				{
-					// expected behavior
-				}
-
-				tx.Commit();
+				// control operation...
+				s.SaveOrUpdate(new TimestampedEntity {Id = "test", Name = "test-3"});
+				Assert.Fail("saveOrUpdate() should fail here");
 			}
+			catch (NonUniqueObjectException)
+			{
+				// expected behavior
+			}
+
+			tx.Commit();
+			s.Close();
 		}
 
 		[Test]
 		public void PersistThenMergeInSameTxnWithVersion()
 		{
-			using(ISession s = OpenSession())
-			using (ITransaction tx = s.BeginTransaction())
+			ISession s = OpenSession();
+			ITransaction tx = s.BeginTransaction();
+			var entity = new VersionedEntity {Id = "test", Name = "test"};
+			s.Persist(entity);
+			s.Merge(new VersionedEntity {Id = "test", Name = "test-2"});
+
+			try
 			{
-				var entity = new VersionedEntity {Id = "test", Name = "test"};
-				s.Persist(entity);
-				s.Merge(new VersionedEntity {Id = "test", Name = "test-2"});
-
-				try
-				{
-					// control operation...
-					s.SaveOrUpdate(new VersionedEntity {Id = "test", Name = "test-3"});
-					Assert.Fail("saveOrUpdate() should fail here");
-				}
-				catch (NonUniqueObjectException)
-				{
-					// expected behavior
-				}
-
-				tx.Commit();
+				// control operation...
+				s.SaveOrUpdate(new VersionedEntity {Id = "test", Name = "test-3"});
+				Assert.Fail("saveOrUpdate() should fail here");
 			}
+			catch (NonUniqueObjectException)
+			{
+				// expected behavior
+			}
+
+			tx.Commit();
+			s.Close();
 		}
 
 		[Test]
