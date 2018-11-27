@@ -731,6 +731,8 @@
     <Compile Include="NHSpecificTest\NH2931\Models.cs" />
     <Compile Include="NHSpecificTest\NH3046\Fixture.cs" />
     <Compile Include="NHSpecificTest\NH3046\Model.cs" />
+    <Compile Include="NHSpecificTest\NH3506\Entity.cs" />
+    <Compile Include="NHSpecificTest\NH3506\DiscriminatorFixture.cs" />
     <Compile Include="NHSpecificTest\NH3518\ClassWithXmlMember.cs" />
     <Compile Include="NHSpecificTest\NH3518\XmlColumnTest.cs" />
     <Compile Include="NHSpecificTest\NH3609\MappingEntity.cs" />
